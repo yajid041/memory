@@ -188,8 +188,6 @@
   .track-actions .icon-btn:disabled:hover { color: var(--blush-200); }
   .track-play.is-playing { color: var(--gold-400); opacity: 1; }
 
-  #photo-input { display: none; }
-
   /* gallery */
   .gallery {
     display: grid;
@@ -303,29 +301,6 @@
   }
   .icon-btn:hover { opacity: 1; color: var(--rose-400); }
   .icon-btn svg { width: 15px; height: 15px; }
-
-  /* empty state */
-  .empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 70px 20px;
-    border: 1px dashed var(--card-border);
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .empty p.title {
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 24px;
-    color: var(--blush-100);
-    margin: 14px 0 6px;
-  }
-  .empty p.hint {
-    font-size: 13.5px;
-    color: var(--blush-200);
-    opacity: 0.6;
-    margin: 0;
-  }
 
   footer {
     position: relative;
@@ -442,6 +417,104 @@
     25% { transform: translateX(-8px); }
     75% { transform: translateX(8px); }
   }
+
+  /* add-photo modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 10, 15, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    width: 100%;
+    max-width: 360px;
+    background: rgba(42, 22, 32, 0.96);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 26px 24px 22px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--blush-100);
+    margin: 0 0 6px;
+  }
+
+  .modal-hint {
+    font-size: 12.5px;
+    color: var(--blush-200);
+    opacity: 0.6;
+    line-height: 1.55;
+    margin: 0 0 18px;
+  }
+  .modal-hint a { color: var(--rose-400); }
+
+  #photo-url-input {
+    width: 100%;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--card-border);
+    color: var(--blush-100);
+    padding: 8px 2px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  #photo-url-input::placeholder { color: rgba(251,233,236,0.35); }
+  #photo-url-input:focus { border-color: var(--rose-400); }
+
+  #photo-url-error {
+    font-size: 11.5px;
+    color: var(--rose-400);
+    min-height: 16px;
+    margin: 6px 0 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  #photo-url-error.show { opacity: 1; }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .modal-btn-ghost,
+  .modal-btn-solid {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .modal-btn-ghost {
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--blush-200);
+  }
+  .modal-btn-ghost:hover { border-color: var(--rose-400); }
+
+  .modal-btn-solid {
+    background: var(--rose-400);
+    border: 1px solid var(--rose-400);
+    color: var(--wine-950);
+  }
+  .modal-btn-solid:hover { opacity: 0.88; }
 </style>
 </head>
 <body class="is-locked">
@@ -505,13 +578,27 @@
     </div>
   </div>
 
-  <input type="file" id="photo-input" accept="image/*" multiple>
   <audio id="bg-audio" loop></audio>
 
   <div class="gallery" id="gallery"></div>
 </main>
 
 <footer>dibuat dengan sepenuh hati, khusus untuk kalian berdua</footer>
+
+<div class="modal-overlay" id="add-photo-overlay">
+  <div class="modal-box" id="add-photo-box">
+    <p class="modal-title">Tambah foto</p>
+    <p class="modal-hint">Upload dulu fotonya ke <a href="https://imgur.com/upload" target="_blank" rel="noopener">imgur.com/upload</a> (gak perlu akun), lalu tempel link gambarnya di sini.</p>
+    <form id="add-photo-form">
+      <input type="url" id="photo-url-input" placeholder="https://i.imgur.com/xxxxx.jpg" autocomplete="off">
+      <p id="photo-url-error">masukkan link yang valid (diawali http/https)</p>
+      <div class="modal-actions">
+        <button type="button" id="add-photo-cancel" class="modal-btn-ghost">Batal</button>
+        <button type="submit" class="modal-btn-solid">Tambahkan</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -544,7 +631,7 @@
 
   // ---------- in-memory state (no localStorage per platform rules) ----------
   var photos = [
-    { id: cryptoId(), url: null, desc: "Klik ikon + di atas untuk mulai menambahkan foto pertama kalian.", date: "" },
+    { id: cryptoId(), url: null, desc: "Klik \"Tambah foto\" di atas dan tempel link Imgur foto pertama kalian.", date: "" },
     { id: cryptoId(), url: null, desc: "Setiap foto punya cerita — tulis di sini, bisa diedit kapan saja.", date: "" }
   ];
 
@@ -564,8 +651,6 @@
   function render(){
     gallery.innerHTML = '';
 
-    var hasRealPhoto = photos.some(function(p){ return p.url; });
-
     photos.forEach(function(p, i){
       var card = document.createElement('div');
       card.className = 'card';
@@ -577,6 +662,7 @@
         img.className = 'card-photo';
         img.src = p.url;
         img.alt = 'foto kenangan';
+        img.loading = 'lazy';
       } else {
         img = document.createElement('div');
         img.className = 'card-photo';
@@ -653,10 +739,6 @@
       card.appendChild(body);
       gallery.appendChild(card);
     });
-
-    if (!hasRealPhoto) {
-      // keep placeholder cards but also show a big empty-state hint if list is entirely empty
-    }
   }
 
   function autoGrow(ta){
@@ -666,39 +748,64 @@
 
   render();
 
-  // ---------- add photo ----------
-  var photoInput = document.getElementById('photo-input');
-  document.getElementById('add-photo-btn').addEventListener('click', function(){
-    photoInput.click();
+  // ---------- add photo via Imgur link ----------
+  var addPhotoBtn = document.getElementById('add-photo-btn');
+  var addPhotoOverlay = document.getElementById('add-photo-overlay');
+  var addPhotoForm = document.getElementById('add-photo-form');
+  var addPhotoCancel = document.getElementById('add-photo-cancel');
+  var photoUrlInput = document.getElementById('photo-url-input');
+  var photoUrlError = document.getElementById('photo-url-error');
+
+  function openAddPhotoModal(){
+    photoUrlInput.value = '';
+    photoUrlError.classList.remove('show');
+    addPhotoOverlay.classList.add('open');
+    requestAnimationFrame(function(){ photoUrlInput.focus(); });
+  }
+
+  function closeAddPhotoModal(){
+    addPhotoOverlay.classList.remove('open');
+  }
+
+  addPhotoBtn.addEventListener('click', openAddPhotoModal);
+  addPhotoCancel.addEventListener('click', closeAddPhotoModal);
+
+  addPhotoOverlay.addEventListener('click', function(e){
+    if (e.target === addPhotoOverlay) closeAddPhotoModal();
   });
 
-  photoInput.addEventListener('change', function(e){
-    var files = Array.prototype.slice.call(e.target.files || []);
-    if (!files.length) return;
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && addPhotoOverlay.classList.contains('open')) {
+      closeAddPhotoModal();
+    }
+  });
 
-    // remove the two starter placeholder cards the first time a real photo is added
+  addPhotoForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var url = photoUrlInput.value.trim();
+
+    if (!/^https?:\/\/\S+/i.test(url)) {
+      photoUrlError.classList.add('show');
+      photoUrlInput.focus();
+      return;
+    }
+    photoUrlError.classList.remove('show');
+
+    // remove the two starter placeholder cards the first time a real link is added
     var isFirstUpload = !photos.some(function(p){ return p.url; });
     if (isFirstUpload) {
-      photos = photos.filter(function(p){ return p.url; }); // clears placeholders
+      photos = photos.filter(function(p){ return p.url; });
     }
 
-    var remaining = files.length;
-    files.forEach(function(file){
-      var reader = new FileReader();
-      reader.onload = function(ev){
-        photos.push({
-          id: cryptoId(),
-          url: ev.target.result,
-          desc: '',
-          date: todayLabel()
-        });
-        remaining--;
-        if (remaining === 0) render();
-      };
-      reader.readAsDataURL(file);
+    photos.push({
+      id: cryptoId(),
+      url: url,
+      desc: '',
+      date: todayLabel()
     });
 
-    photoInput.value = '';
+    closeAddPhotoModal();
+    render();
   });
 
   // ---------- background music (playlist: About You & Swahty Cantik) ----------
