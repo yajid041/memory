@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bffl's album</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wine-950:#2a1620;
+    --wine-900:#3a1f2b;
+    --wine-800:#4c2836;
+    --blush-100:#fbe9ec;
+    --blush-200:#f3d3d9;
+    --rose-400:#c9788a;
+    --rose-500:#b45f74;
+    --gold-400:#d9a86c;
+    --cream:#f7ede7;
+    --ink:#2a1620;
+    --card-bg: rgba(251, 233, 236, 0.06);
+    --card-border: rgba(251, 233, 236, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: linear-gradient(180deg, var(--wine-950) 0%, var(--wine-900) 45%, var(--wine-800) 100%);
+    color: var(--blush-100);
+    font-family: 'Manrope', sans-serif;
+    overflow-x: hidden;
+  }
+
+  #hearts-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .heart {
+    position: absolute;
+    top: -10%;
+    opacity: 0;
+    color: var(--rose-400);
+    will-change: transform, opacity;
+    animation-name: fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes fall {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    8%   { opacity: 0.55; }
+    92%  { opacity: 0.45; }
+    100% { transform: translateY(115vh) translateX(var(--drift, 20px)) rotate(25deg); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .heart { animation: none; display: none; }
+    * { scroll-behavior: auto !important; }
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 72px 24px 120px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .eyebrow-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--rose-400);
+    letter-spacing: 0.02em;
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(42px, 8vw, 74px);
+    line-height: 1.02;
+    margin: 0 0 14px;
+    color: var(--blush-100);
+  }
+
+  h1 .amp { color: var(--gold-400); font-style: italic; font-weight: 500; }
+
+  .subtitle {
+    font-size: 15.5px;
+    color: var(--blush-200);
+    opacity: 0.75;
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* toolbar */
+  .toolbar {
+    position: sticky;
+    top: 16px;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(42, 22, 32, 0.55);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    color: var(--blush-100);
+    padding: 11px 20px;
+    border-radius: 999px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .pill-btn:hover { border-color: var(--rose-400); }
+  .pill-btn:active { transform: scale(0.97); }
+  .pill-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .pill-btn.is-playing { border-color: var(--gold-400); color: var(--gold-400); }
+
+  #music-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    background: rgba(42, 22, 32, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 14px;
+    display: none;
+    z-index: 30;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  }
+  #music-panel.open { display: block; }
+
+  .music-panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--blush-200);
+    opacity: 0.7;
+    margin: 0 0 10px;
+  }
+
+  .track-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-top: 1px solid var(--card-border);
+  }
+  .track-row:first-of-type { border-top: none; }
+
+  .track-info { display: flex; flex-direction: column; gap: 2px; }
+  .track-name { font-size: 13.5px; color: var(--blush-100); font-weight: 500; }
+  .track-status { font-size: 11px; color: var(--blush-200); opacity: 0.55; }
+
+  .track-row.is-active .track-name { color: var(--gold-400); }
+
+  .track-actions { display: flex; align-items: center; gap: 6px; }
+  .track-actions .icon-btn { opacity: 0.8; }
+  .track-actions .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .track-actions .icon-btn:disabled:hover { color: var(--blush-200); }
+  .track-play.is-playing { color: var(--gold-400); opacity: 1; }
+
+  #photo-input { display: none; }
+
+  /* gallery */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 22px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: card-in 0.6s ease forwards;
+  }
+  @keyframes card-in { to { opacity: 1; transform: translateY(0); } }
+
+  .card-photo {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    display: block;
+    background: linear-gradient(135deg, var(--wine-800), var(--rose-500) 140%);
+  }
+
+  .card-body {
+    padding: 16px 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .card-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--blush-100);
+    background: transparent;
+    border: none;
+    resize: none;
+    width: 100%;
+    min-height: 44px;
+    outline: none;
+    font-weight: 500;
+  }
+  .card-desc::placeholder { color: rgba(251,233,236,0.4); }
+
+  .card-desc:focus {
+    outline: none;
+  }
+
+  .card-desc-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--blush-100);
+    font-weight: 500;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .card-desc-text.is-placeholder {
+    color: rgba(251,233,236,0.4);
+    font-weight: 400;
+  }
+
+  .desc-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .desc-row .card-desc-text,
+  .desc-row .card-desc { flex: 1; }
+  .desc-edit-btn {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 6px;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .card-date {
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--blush-200);
+    opacity: 0.55;
+  }
+
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--blush-200);
+    opacity: 0.55;
+    padding: 4px;
+    display: flex;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+  .icon-btn:hover { opacity: 1; color: var(--rose-400); }
+  .icon-btn svg { width: 15px; height: 15px; }
+
+  /* empty state */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 70px 20px;
+    border: 1px dashed var(--card-border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .empty p.title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--blush-100);
+    margin: 14px 0 6px;
+  }
+  .empty p.hint {
+    font-size: 13.5px;
+    color: var(--blush-200);
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 28px 20px 40px;
+    font-size: 12px;
+    color: var(--blush-200);
+    opacity: 0.4;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  ::selection { background: var(--rose-400); color: var(--wine-950); }
+
+  /* lock screen */
+  body.is-locked #hearts-layer,
+  body.is-locked main,
+  body.is-locked footer {
+    display: none;
+  }
+
+  #lock-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 30%, var(--wine-900) 0%, var(--wine-950) 75%);
+  }
+
+  body:not(.is-locked) #lock-screen { display: none; }
+
+  .lock-box {
+    text-align: center;
+    padding: 20px;
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .lock-heart {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 18px;
+    color: var(--rose-400);
+    opacity: 0.85;
+  }
+
+  .lock-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 26px;
+    color: var(--blush-100);
+    margin: 0 0 6px;
+  }
+
+  .lock-hint {
+    font-size: 13px;
+    color: var(--blush-200);
+    opacity: 0.55;
+    margin: 0 0 24px;
+  }
+
+  #lock-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  #lock-input {
+    width: 100%;
+    text-align: center;
+    letter-spacing: 0.35em;
+    font-size: 20px;
+    font-family: 'Manrope', sans-serif;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--card-border);
+    color: var(--blush-100);
+    padding: 8px 4px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  #lock-input:focus { border-color: var(--rose-400); }
+  #lock-input::placeholder { letter-spacing: 0.35em; color: rgba(251,233,236,0.3); }
+
+  #lock-submit {
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--blush-100);
+    padding: 10px 26px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  #lock-submit:hover { border-color: var(--rose-400); }
+
+  #lock-error {
+    font-size: 12px;
+    color: var(--rose-400);
+    min-height: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  #lock-error.show { opacity: 1; }
+
+  .lock-box.shake { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+</style>
+</head>
+<body class="is-locked">
+
+<div id="lock-screen">
+  <div class="lock-box" id="lock-box">
+    <svg class="lock-heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-10.2-9.3C.3 8.7 1.6 5 5.1 4.2c2-.5 4 .4 5 2.1 1-1.7 3-2.6 5-2.1 3.5.8 4.8 4.5 3.3 7.5C19.5 16.4 12 21 12 21z"/></svg>
+    <p class="lock-title">this is our memory</p>
+    <p class="lock-hint">hint: anniv</p>
+    <form id="lock-form">
+      <input type="password" id="lock-input" inputmode="numeric" placeholder="••••" maxlength="12" autocomplete="off">
+      <p id="lock-error">password salah, coba lagi</p>
+      <button type="submit" id="lock-submit">Buka album</button>
+    </form>
+  </div>
+</div>
+
+<div id="hearts-layer"></div>
+
+<main>
+  <header>
+    <h1>bffl<span class="amp">'s</span> album</h1>
+    <p class="subtitle">our memory about us</p>
+  </header>
+
+  <div class="toolbar">
+    <button class="pill-btn" id="add-photo-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Tambah foto
+    </button>
+    <div style="position:relative;">
+      <button class="pill-btn" id="music-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span id="music-btn-label">Musik</span>
+      </button>
+      <div id="music-panel">
+        <p class="music-panel-title">Playlist</p>
+        <div class="track-row" data-track="0">
+          <div class="track-info">
+            <span class="track-name">About You</span>
+            <span class="track-status" id="track-status-0">siap diputar</span>
+          </div>
+          <div class="track-actions">
+            <button class="icon-btn track-play" data-track="0" title="Putar">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="track-row" data-track="1">
+          <div class="track-info">
+            <span class="track-name">Swahty Cantik</span>
+            <span class="track-status" id="track-status-1">siap diputar</span>
+          </div>
+          <div class="track-actions">
+            <button class="icon-btn track-play" data-track="1" title="Putar">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="photo-input" accept="image/*" multiple>
+  <audio id="bg-audio" loop></audio>
+
+  <div class="gallery" id="gallery"></div>
+</main>
+
+<footer>dibuat dengan sepenuh hati, khusus untuk kalian berdua</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- password gate ----------
+  var CORRECT_PASSWORD = "1808";
+  var lockForm = document.getElementById('lock-form');
+  var lockInput = document.getElementById('lock-input');
+  var lockError = document.getElementById('lock-error');
+  var lockBox = document.getElementById('lock-box');
+
+  lockForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (lockInput.value.trim() === CORRECT_PASSWORD) {
+      document.body.classList.remove('is-locked');
+    } else {
+      lockError.classList.add('show');
+      lockBox.classList.remove('shake');
+      void lockBox.offsetWidth; // restart animation
+      lockBox.classList.add('shake');
+      lockInput.value = '';
+      lockInput.focus();
+    }
+  });
+
+  window.addEventListener('load', function(){
+    lockInput.focus();
+  });
+
+  // ---------- in-memory state (no localStorage per platform rules) ----------
+  var photos = [
+    { id: cryptoId(), url: null, desc: "Klik ikon + di atas untuk mulai menambahkan foto pertama kalian.", date: "" },
+    { id: cryptoId(), url: null, desc: "Setiap foto punya cerita — tulis di sini, bisa diedit kapan saja.", date: "" }
+  ];
+
+  function cryptoId(){
+    return 'p_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  }
+
+  function todayLabel(){
+    var d = new Date();
+    var bulan = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    return d.getDate() + " " + bulan[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  // ---------- render gallery ----------
+  var gallery = document.getElementById('gallery');
+
+  function render(){
+    gallery.innerHTML = '';
+
+    var hasRealPhoto = photos.some(function(p){ return p.url; });
+
+    photos.forEach(function(p, i){
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.style.animationDelay = (i * 0.05) + 's';
+
+      var img;
+      if (p.url) {
+        img = document.createElement('img');
+        img.className = 'card-photo';
+        img.src = p.url;
+        img.alt = 'foto kenangan';
+      } else {
+        img = document.createElement('div');
+        img.className = 'card-photo';
+      }
+      card.appendChild(img);
+
+      var body = document.createElement('div');
+      body.className = 'card-body';
+
+      var descRow = document.createElement('div');
+      descRow.className = 'desc-row';
+
+      if (p.editing) {
+        var ta = document.createElement('textarea');
+        ta.className = 'card-desc';
+        ta.value = p.desc;
+        ta.placeholder = 'Tulis cerita di balik foto ini...';
+        ta.rows = 2;
+        descRow.appendChild(ta);
+
+        var saveBtn = document.createElement('button');
+        saveBtn.className = 'icon-btn desc-edit-btn';
+        saveBtn.title = 'Simpan';
+        saveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+        saveBtn.addEventListener('click', function(){
+          p.desc = ta.value;
+          p.editing = false;
+          render();
+        });
+        descRow.appendChild(saveBtn);
+
+        body.appendChild(descRow);
+        requestAnimationFrame(function(){ ta.focus(); autoGrow(ta); });
+      } else {
+        var descText = document.createElement('p');
+        descText.className = 'card-desc-text' + (p.desc ? '' : ' is-placeholder');
+        descText.textContent = p.desc || 'Belum ada cerita untuk foto ini...';
+        descRow.appendChild(descText);
+
+        var editBtn = document.createElement('button');
+        editBtn.className = 'icon-btn desc-edit-btn';
+        editBtn.title = 'Edit deskripsi';
+        editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>';
+        editBtn.addEventListener('click', function(){
+          p.editing = true;
+          render();
+        });
+        descRow.appendChild(editBtn);
+
+        body.appendChild(descRow);
+      }
+
+      var foot = document.createElement('div');
+      foot.className = 'card-foot';
+
+      var date = document.createElement('span');
+      date.className = 'card-date';
+      date.textContent = p.date || '';
+      foot.appendChild(date);
+
+      if (p.url) {
+        var del = document.createElement('button');
+        del.className = 'icon-btn';
+        del.title = 'Hapus foto';
+        del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+        del.addEventListener('click', function(){
+          photos = photos.filter(function(x){ return x.id !== p.id; });
+          render();
+        });
+        foot.appendChild(del);
+      }
+
+      body.appendChild(foot);
+      card.appendChild(body);
+      gallery.appendChild(card);
+    });
+
+    if (!hasRealPhoto) {
+      // keep placeholder cards but also show a big empty-state hint if list is entirely empty
+    }
+  }
+
+  function autoGrow(ta){
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  render();
+
+  // ---------- add photo ----------
+  var photoInput = document.getElementById('photo-input');
+  document.getElementById('add-photo-btn').addEventListener('click', function(){
+    photoInput.click();
+  });
+
+  photoInput.addEventListener('change', function(e){
+    var files = Array.prototype.slice.call(e.target.files || []);
+    if (!files.length) return;
+
+    // remove the two starter placeholder cards the first time a real photo is added
+    var isFirstUpload = !photos.some(function(p){ return p.url; });
+    if (isFirstUpload) {
+      photos = photos.filter(function(p){ return p.url; }); // clears placeholders
+    }
+
+    var remaining = files.length;
+    files.forEach(function(file){
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        photos.push({
+          id: cryptoId(),
+          url: ev.target.result,
+          desc: '',
+          date: todayLabel()
+        });
+        remaining--;
+        if (remaining === 0) render();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    photoInput.value = '';
+  });
+
+  // ---------- background music (playlist: About You & Swahty Cantik) ----------
+  // ISI LINK LAGU KAMU DI SINI (url ke file mp3 yang kamu hosting/punya sendiri):
+  var tracks = [
+    { name: 'About You', url: '' },      // <-- isi url mp3 "About You" di sini
+    { name: 'Swahty Cantik', url: '' }   // <-- isi url mp3 "Swahty Cantik" di sini
+  ];
+
+  var audio = document.getElementById('bg-audio');
+  var musicBtn = document.getElementById('music-btn');
+  var musicLabel = document.getElementById('music-btn-label');
+  var musicPanel = document.getElementById('music-panel');
+  var activeTrack = null; // index
+
+  musicBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    musicPanel.classList.toggle('open');
+  });
+  document.addEventListener('click', function(e){
+    if (!musicPanel.contains(e.target) && e.target !== musicBtn) {
+      musicPanel.classList.remove('open');
+    }
+  });
+
+  document.querySelectorAll('.track-play').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.getAttribute('data-track'), 10);
+      if (!tracks[idx].url) {
+        document.getElementById('track-status-' + idx).textContent = 'link belum diisi';
+        return;
+      }
+      if (activeTrack === idx && !audio.paused) {
+        audio.pause();
+        setPlayingUI(null);
+        return;
+      }
+      audio.src = tracks[idx].url;
+      audio.play().then(function(){
+        activeTrack = idx;
+        setPlayingUI(idx);
+      }).catch(function(){});
+    });
+  });
+
+  function setPlayingUI(idx){
+    document.querySelectorAll('.track-row').forEach(function(row){
+      row.classList.remove('is-active');
+    });
+    document.querySelectorAll('.track-play').forEach(function(btn){
+      btn.classList.remove('is-playing');
+    });
+    if (idx === null) {
+      musicBtn.classList.remove('is-playing');
+      musicLabel.textContent = 'Musik';
+      return;
+    }
+    document.querySelector('.track-row[data-track="' + idx + '"]').classList.add('is-active');
+    document.querySelector('.track-play[data-track="' + idx + '"]').classList.add('is-playing');
+    musicBtn.classList.add('is-playing');
+    musicLabel.textContent = tracks[idx].name;
+  }
+
+  // ---------- falling hearts ----------
+  var heartsLayer = document.getElementById('hearts-layer');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion) {
+    var HEART_COUNT = 16;
+    for (var i = 0; i < HEART_COUNT; i++) {
+      spawnHeart(true);
+    }
+  }
+
+  function spawnHeart(initial){
+    var el = document.createElement('div');
+    el.className = 'heart';
+    var size = 10 + Math.random() * 16;
+    el.style.left = (Math.random() * 100) + 'vw';
+    el.style.fontSize = size + 'px';
+    el.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+    var duration = 12 + Math.random() * 14;
+    el.style.animationDuration = duration + 's';
+    el.style.animationDelay = (initial ? Math.random() * duration : 0) + 's';
+    el.innerHTML = Math.random() > 0.5 ? '&#10084;' : '&#10084;&#65039;';
+    el.style.filter = 'drop-shadow(0 0 6px rgba(201,120,138,0.25))';
+    heartsLayer.appendChild(el);
+  }
+})();
+</script>
+
+</body>
+</html>
