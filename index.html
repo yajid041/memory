@@ -666,7 +666,7 @@
   <div class="toolbar">
     <button class="pill-btn" id="add-photo-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      Tambah foto
+      Tambah foto/video
     </button>
     <div style="position:relative;">
       <button class="pill-btn" id="music-btn">
@@ -710,7 +710,7 @@
 
 <div class="modal-overlay" id="add-photo-overlay">
   <div class="modal-box" id="add-photo-box">
-    <p class="modal-title">Tambah foto</p>
+    <p class="modal-title">Tambah foto/video</p>
 
     <div class="tab-switch">
       <button type="button" class="tab-btn active" id="tab-upload-btn">Upload otomatis</button>
@@ -734,12 +734,12 @@
 
       <!-- shown once Client ID is set for this session -->
       <div id="imgur-upload-section" style="display:none;">
-        <p class="modal-hint">Pilih foto — otomatis diupload ke Imgur dan langsung tersimpan sebagai link yang bisa dilihat siapa aja.</p>
+        <p class="modal-hint">Pilih foto atau video — otomatis diupload ke Imgur dan langsung tersimpan sebagai link yang bisa dilihat siapa aja. Video agak lebih lama uploadnya, dan Imgur batasin ukuran file buat upload tanpa akun.</p>
         <label class="file-drop" for="photo-file-input" id="file-drop-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-          <span>Klik untuk pilih foto (bisa lebih dari satu)</span>
+          <span>Klik untuk pilih foto/video (bisa lebih dari satu)</span>
         </label>
-        <input type="file" id="photo-file-input" accept="image/*" multiple>
+        <input type="file" id="photo-file-input" accept="image/*,video/*" multiple>
         <p class="modal-foot-note">pakai Client ID lain? <button type="button" class="link-btn" id="change-client-id-btn">ganti di sini</button></p>
       </div>
     </div>
@@ -748,7 +748,7 @@
     <div id="link-pane" style="display:none;">
       <p class="modal-hint">Sudah punya link Imgur-nya sendiri? Tempel di sini.</p>
       <form id="add-photo-form">
-        <input type="url" id="photo-url-input" placeholder="https://i.imgur.com/xxxxx.jpg" autocomplete="off">
+        <input type="url" id="photo-url-input" placeholder="https://i.imgur.com/xxxxx.jpg atau .mp4" autocomplete="off">
         <p id="photo-url-error">masukkan link yang valid (diawali http/https)</p>
         <div class="modal-actions">
           <button type="button" class="modal-btn-ghost" id="add-photo-cancel-link">Batal</button>
@@ -794,7 +794,38 @@
 
   // ---------- in-memory state ----------
   var photos = [
-    { id: cryptoId(), url: "https://imgur.com/Aoh7J90.jpg", desc: "", date: todayLabel() }
+    { id: cryptoId(), url: "https://imgur.com/T88sDsM.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/wtCLWSy.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/wCArkqz.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/Lp7WDrk.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/LTwLzel.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/v3ygE5T.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/2WijN4h.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/ZBlLVSp.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/thK1TXN.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/thK1TXN.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/cA7OVD7.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/QNZmxL0.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/4OiAI3S.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/WSoHv5M.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/PqvdrwO.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/dhkrVx0.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/whbWX6O.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/htkGJaa.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/mc6jxls.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/qaEOfay.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/IW6e8LB.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/OWQYM65.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/1sUHUa3.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/459uBFW.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/aUIVVHu.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/LDm818o.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/SikMoun.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/lm2hSw9.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/FStLpLo.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/rq68PsI.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/zXWdgv3.jpg", type: 'image', desc: "", date: todayLabel() },
+    { id: cryptoId(), url: "https://imgur.com/tWoIyes.mp4", type: 'video', desc: "", date: todayLabel() }
   ];
 
   function cryptoId(){
@@ -811,6 +842,20 @@
     return photos.filter(function(x){ return x.id === id; })[0];
   }
 
+  function isVideoFile(file){
+    return !!(file && file.type && file.type.indexOf('video/') === 0);
+  }
+
+  function isVideoUrl(url){
+    return /\.(mp4|webm|mov|m4v|avi|mkv|gifv)(\?.*)?$/i.test(url);
+  }
+
+  // Imgur's .gifv pages aren't directly playable as a <video src>; the .mp4
+  // at the same path is.
+  function normalizeVideoUrl(url){
+    return url.replace(/\.gifv(\?.*)?$/i, '.mp4$1');
+  }
+
   // ---------- render gallery ----------
   var gallery = document.getElementById('gallery');
 
@@ -823,7 +868,14 @@
       card.style.animationDelay = (i * 0.05) + 's';
 
       var img;
-      if (p.url) {
+      if (p.url && p.type === 'video') {
+        img = document.createElement('video');
+        img.className = 'card-photo';
+        img.src = normalizeVideoUrl(p.url);
+        img.controls = true;
+        img.playsInline = true;
+        img.preload = 'metadata';
+      } else if (p.url) {
         img = document.createElement('img');
         img.className = 'card-photo';
         img.src = p.url;
@@ -1090,6 +1142,7 @@
       var newPhoto = {
         id: cryptoId(),
         url: null,
+        type: isVideoFile(file) ? 'video' : 'image',
         file: file,
         uploading: true,
         error: null,
@@ -1124,6 +1177,7 @@
     photos.push({
       id: cryptoId(),
       url: url,
+      type: isVideoUrl(url) ? 'video' : 'image',
       desc: '',
       date: todayLabel()
     });
